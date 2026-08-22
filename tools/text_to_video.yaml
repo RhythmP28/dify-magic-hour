@@ -1,0 +1,124 @@
+identity:
+  name: text_to_video
+  author: rhythmp28
+  label:
+    en_US: Text to Video
+    zh_Hans: 文生视频
+    pt_BR: Texto para Vídeo
+    ja_JP: テキストから動画
+description:
+  human:
+    en_US: Generate a video from a text prompt with Magic Hour (WAN 2.2, LTX 2.3, MiniMax H3, Kling 3.0, Veo 3.1, Sora 2 ...). Returns the video URL.
+    zh_Hans: 使用 Magic Hour 从文本提示生成视频，返回视频 URL。
+    pt_BR: Gere um vídeo a partir de um prompt de texto com Magic Hour. Retorna a URL do vídeo.
+    ja_JP: Magic Hour でテキストプロンプトから動画を生成し、動画 URL を返します。
+  llm: >-
+    Generate a short AI video from a text prompt using Magic Hour. Returns JSON {project_id, status, video_url, credits_charged}
+    plus a link to the MP4. Cost = credits_per_second x duration. Free-tier models (24 credits/s): wan-2.2 (default, 3-10s or 15s),
+    ltx-2.3 (1-10/15/20/25/30s), minimax-h3 (1-10/15/20/25/30s, up to 1080p). Paid models: seedance-1.5 (30/s, 4-12s), kling-2.6 (36/s, 5 or 10s),
+    kling-3.0 (48/s, 3-15s, best motion), veo3.1-lite (48/s), veo3.1 / veo3.1-audio (96/s, highest quality, 4/6/8/16..56s),
+    sora-2 (120/s, 4/8/12/24/36/48/60s, max 720p). Default wan-2.2 at 5s/480p costs 120 credits (inside the free daily budget).
+    Pick the free default unless the user asks for premium quality, native audio (veo3.1-audio), or a specific model.
+    Duration must be one of the model's allowed values. Rendering takes 1-5 minutes; the tool waits by default.
+parameters:
+  - name: prompt
+    type: string
+    required: true
+    label: {en_US: Prompt, zh_Hans: 提示词, pt_BR: Prompt, ja_JP: プロンプト}
+    human_description: {en_US: "Describe the video: subject, action, camera movement, style, lighting."}
+    llm_description: "Detailed description of the video to generate: subject, action, camera movement, style, lighting. English works best."
+    form: llm
+  - name: model
+    type: select
+    required: false
+    default: wan-2.2
+    label: {en_US: Model, zh_Hans: 模型, pt_BR: Modelo, ja_JP: モデル}
+    human_description: {en_US: "Video model. wan-2.2, ltx-2.3 and minimax-h3 are in the free tier."}
+    llm_description: "Video model id. Free tier: wan-2.2 (default), ltx-2.3, minimax-h3. Premium: kling-3.0, veo3.1, veo3.1-audio, sora-2, seedance-*."
+    form: llm
+    options:
+      - value: wan-2.2
+        label: {en_US: "WAN 2.2 (free tier, 24 cr/s, 3-10s or 15s)"}
+      - value: ltx-2.3
+        label: {en_US: "LTX 2.3 (free tier, 24 cr/s, 1-10/15/20/25/30s)"}
+      - value: minimax-h3
+        label: {en_US: "MiniMax H3 (free tier, 24 cr/s, up to 1080p)"}
+      - value: seedance-1.5
+        label: {en_US: "Seedance 1.5 (30 cr/s, 4-12s)"}
+      - value: kling-2.6
+        label: {en_US: "Kling 2.6 (36 cr/s, 5 or 10s)"}
+      - value: kling-3.0
+        label: {en_US: "Kling 3.0 (48 cr/s, 3-15s)"}
+      - value: veo3.1-lite
+        label: {en_US: "Veo 3.1 Lite (48 cr/s, 4/6/8/16...56s)"}
+      - value: veo3.1
+        label: {en_US: "Veo 3.1 (96 cr/s)"}
+      - value: veo3.1-audio
+        label: {en_US: "Veo 3.1 with audio (96 cr/s)"}
+      - value: sora-2
+        label: {en_US: "Sora 2 (120 cr/s, 4/8/12/24/36/48/60s, max 720p)"}
+      - value: seedance-2.0-mini
+        label: {en_US: "Seedance 2.0 mini (4-15s, 720p)"}
+      - value: seedance-2.0
+        label: {en_US: "Seedance 2.0 (4-15s, 720p)"}
+      - value: seedance-2.5
+        label: {en_US: "Seedance 2.5 (4-30s, 720p)"}
+  - name: duration_seconds
+    type: number
+    required: false
+    default: 5
+    min: 1
+    max: 60
+    label: {en_US: Duration (seconds), zh_Hans: 时长（秒）, pt_BR: Duração (s), ja_JP: 長さ（秒）}
+    human_description: {en_US: "Length of the video in seconds. Must be an allowed value for the chosen model (see model list)."}
+    llm_description: "Video length in seconds (default 5). Must be allowed by the model: wan-2.2 3-10 or 15; kling-3.0 3-15; kling-2.6 5 or 10; veo3.1 4/6/8/16/24/32/40/48/56; sora-2 4/8/12/24/36/48/60."
+    form: llm
+  - name: resolution
+    type: select
+    required: false
+    default: 480p
+    label: {en_US: Resolution, zh_Hans: 分辨率, pt_BR: Resolução, ja_JP: 解像度}
+    human_description: {en_US: "Output resolution. 480p is cheapest; higher resolutions cost more credits."}
+    llm_description: "Output resolution: 480p (default, cheapest), 720p, or 1080p. sora-2 and seedance-2.x support at most 720p."
+    form: llm
+    options:
+      - value: 480p
+        label: {en_US: "480p (cheapest, fastest)"}
+      - value: 720p
+        label: {en_US: "720p"}
+      - value: 1080p
+        label: {en_US: "1080p (not supported by sora-2 / seedance-2.x)"}
+  - name: aspect_ratio
+    type: select
+    required: false
+    default: "16:9"
+    label: {en_US: Aspect ratio, zh_Hans: 宽高比, pt_BR: Proporção, ja_JP: アスペクト比}
+    human_description: {en_US: "16:9 landscape, 9:16 portrait (shorts/reels), or 1:1 square."}
+    llm_description: "16:9 (default, landscape), 9:16 (vertical/shorts), or 1:1 (square)."
+    form: llm
+    options:
+      - value: "16:9"
+        label: {en_US: "16:9 landscape"}
+      - value: "9:16"
+        label: {en_US: "9:16 portrait"}
+      - value: "1:1"
+        label: {en_US: "1:1 square"}
+  - name: audio
+    type: boolean
+    required: false
+    default: false
+    label: {en_US: Generate audio, zh_Hans: 生成音频, pt_BR: Gerar áudio, ja_JP: 音声を生成}
+    human_description: {en_US: "Ask the model to generate audio too (supported by some models, e.g. veo3.1-audio; may cost extra)."}
+    llm_description: "Set true to request generated audio for models that support it (e.g. veo3.1-audio, sora-2). Default false."
+    form: form
+  - name: wait_for_completion
+    type: boolean
+    required: false
+    default: true
+    label: {en_US: Wait for completion, zh_Hans: 等待完成, pt_BR: Aguardar conclusão, ja_JP: 完了を待つ}
+    human_description: {en_US: "Poll every 5s until the job finishes (up to 15 min). Turn off to return the project_id immediately and check later with the Get project tool."}
+    llm_description: "true (default) waits for the render and returns the output URL. Set false to return only project_id/status immediately and poll later with magic_hour_get_project."
+    form: form
+extra:
+  python:
+    source: tools/text_to_video.py

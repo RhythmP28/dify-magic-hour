@@ -1,0 +1,45 @@
+identity:
+  author: "rhythmp28"
+  name: "magic_hour"
+  label:
+    en_US: "Magic Hour"
+    zh_Hans: "Magic Hour"
+    pt_BR: "Magic Hour"
+    ja_JP: "Magic Hour"
+  description:
+    en_US: "AI video and image generation: text-to-video, image-to-video and image generation with Sora 2, Veo 3.1, Kling 3.0, WAN 2.2, GPT-image, Nano Banana Pro, Flux and more."
+    zh_Hans: "AI 视频与图片生成：文生视频、图生视频、文生图（Sora 2、Veo 3.1、Kling 3.0、WAN 2.2、GPT-image、Nano Banana Pro、Flux 等）。"
+    pt_BR: "Geração de vídeo e imagem com IA: texto para vídeo, imagem para vídeo e geração de imagens com Sora 2, Veo 3.1, Kling 3.0, WAN 2.2, GPT-image, Nano Banana Pro, Flux e mais."
+    ja_JP: "AI 動画・画像生成：テキストから動画、画像から動画、画像生成（Sora 2、Veo 3.1、Kling 3.0、WAN 2.2、GPT-image、Nano Banana Pro、Flux など）。"
+  icon: "icon.png"
+  tags:
+    - image
+    - videos
+credentials_for_provider:
+  magic_hour_api_key:
+    type: secret-input
+    required: true
+    label:
+      en_US: Magic Hour API key
+      zh_Hans: Magic Hour API 密钥
+      pt_BR: Chave de API Magic Hour
+      ja_JP: Magic Hour API キー
+    placeholder:
+      en_US: mhk_live_...
+      zh_Hans: mhk_live_...
+      pt_BR: mhk_live_...
+      ja_JP: mhk_live_...
+    help:
+      en_US: Get a free API key at https://magichour.ai/developer (400 credits on signup + 100/day, no card required).
+      zh_Hans: 在 https://magichour.ai/developer 免费获取 API 密钥（注册送 400 积分，每天 100 积分，无需绑卡）。
+      pt_BR: Obtenha uma chave gratuita em https://magichour.ai/developer (400 créditos no cadastro + 100/dia, sem cartão).
+      ja_JP: https://magichour.ai/developer で無料 API キーを取得（登録時 400 クレジット + 毎日 100、カード不要）。
+    url: https://magichour.ai/developer
+tools:
+  - tools/text_to_video.yaml
+  - tools/image_to_video.yaml
+  - tools/generate_image.yaml
+  - tools/get_project.yaml
+extra:
+  python:
+    source: provider/magic_hour.py

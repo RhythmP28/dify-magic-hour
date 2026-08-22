@@ -1,0 +1,90 @@
+identity:
+  name: generate_image
+  author: rhythmp28
+  label:
+    en_US: Generate Image
+    zh_Hans: 生成图片
+    pt_BR: Gerar Imagem
+    ja_JP: 画像生成
+description:
+  human:
+    en_US: Generate one or more images from a text prompt with Magic Hour (GPT-image, Nano Banana Pro, Seedream, Flux, Z-Image ...). Returns image URLs.
+    zh_Hans: 使用 Magic Hour 从文本生成图片（GPT-image、Nano Banana Pro、Seedream、Flux、Z-Image 等），返回图片 URL。
+    pt_BR: Gere imagens a partir de texto com Magic Hour (GPT-image, Nano Banana Pro, Seedream, Flux, Z-Image ...). Retorna URLs.
+    ja_JP: Magic Hour でテキストから画像を生成（GPT-image、Nano Banana Pro、Seedream、Flux、Z-Image など）。画像 URL を返します。
+  llm: >-
+    Generate images from a text prompt with Magic Hour. Returns JSON {project_id, status, image_urls, credits_charged} and a link per image.
+    Cheap: a few credits per image (well inside the free daily budget). Models: default (balanced, use unless asked otherwise),
+    gpt-image-2 (strong text rendering / instructions), nano-banana-pro (photoreal, Google), seedream-5-pro, flux-2-klein (fast),
+    z-image-turbo (fastest), qwen-edit. image_count 1-4. aspect_ratio 1:1, 16:9, 9:16, 4:3, 3:4. Usually finishes in 10-40 seconds.
+parameters:
+  - name: prompt
+    type: string
+    required: true
+    label: {en_US: Prompt, zh_Hans: 提示词, pt_BR: Prompt, ja_JP: プロンプト}
+    human_description: {en_US: "Describe the image: subject, style, composition, lighting."}
+    llm_description: "Detailed description of the image to generate: subject, style, composition, lighting."
+    form: llm
+  - name: model
+    type: select
+    required: false
+    default: default
+    label: {en_US: Model, zh_Hans: 模型, pt_BR: Modelo, ja_JP: モデル}
+    human_description: {en_US: "Image model."}
+    llm_description: "Image model: default (balanced), gpt-image-2, nano-banana-pro, seedream-5-pro, flux-2-klein, z-image-turbo, qwen-edit."
+    form: llm
+    options:
+      - value: default
+        label: {en_US: "default (balanced)"}
+      - value: gpt-image-2
+        label: {en_US: "GPT-image 2"}
+      - value: nano-banana-pro
+        label: {en_US: "Nano Banana Pro"}
+      - value: seedream-5-pro
+        label: {en_US: "Seedream 5 Pro"}
+      - value: flux-2-klein
+        label: {en_US: "Flux 2 Klein"}
+      - value: z-image-turbo
+        label: {en_US: "Z-Image Turbo"}
+      - value: qwen-edit
+        label: {en_US: "Qwen Edit"}
+  - name: image_count
+    type: number
+    required: false
+    default: 1
+    min: 1
+    max: 4
+    label: {en_US: Number of images, zh_Hans: 图片数量, pt_BR: Quantidade, ja_JP: 枚数}
+    human_description: {en_US: "How many images to generate (1-4)."}
+    llm_description: "Number of images to generate, 1-4 (default 1)."
+    form: llm
+  - name: aspect_ratio
+    type: select
+    required: false
+    default: "1:1"
+    label: {en_US: Aspect ratio, zh_Hans: 宽高比, pt_BR: Proporção, ja_JP: アスペクト比}
+    human_description: {en_US: "Aspect ratio of the output image."}
+    llm_description: "Aspect ratio: 1:1 (default), 16:9, 9:16, 4:3, 3:4."
+    form: llm
+    options:
+      - value: "1:1"
+        label: {en_US: "1:1"}
+      - value: "16:9"
+        label: {en_US: "16:9"}
+      - value: "9:16"
+        label: {en_US: "9:16"}
+      - value: "4:3"
+        label: {en_US: "4:3"}
+      - value: "3:4"
+        label: {en_US: "3:4"}
+  - name: wait_for_completion
+    type: boolean
+    required: false
+    default: true
+    label: {en_US: Wait for completion, zh_Hans: 等待完成, pt_BR: Aguardar conclusão, ja_JP: 完了を待つ}
+    human_description: {en_US: "Poll every 5s until the job finishes (up to 15 min). Turn off to return the project_id immediately and check later with the Get project tool."}
+    llm_description: "true (default) waits for the render and returns the output URL. Set false to return only project_id/status immediately and poll later with magic_hour_get_project."
+    form: form
+extra:
+  python:
+    source: tools/generate_image.py

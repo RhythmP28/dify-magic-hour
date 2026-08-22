@@ -1,0 +1,42 @@
+identity:
+  name: get_project
+  author: rhythmp28
+  label:
+    en_US: Get Project Status
+    zh_Hans: 查询任务状态
+    pt_BR: Status do Projeto
+    ja_JP: プロジェクト状態
+description:
+  human:
+    en_US: Check the status and download URLs of a Magic Hour video or image project by id. Free.
+    zh_Hans: 按 id 查询 Magic Hour 视频/图片任务的状态和下载链接，免费。
+    pt_BR: Consulta o status e as URLs de um projeto de vídeo ou imagem do Magic Hour pelo id. Gratuito.
+    ja_JP: Magic Hour の動画/画像プロジェクトの状態とダウンロード URL を id で確認します。無料。
+  llm: >-
+    Fetch the current status of a Magic Hour project started earlier (e.g. with wait_for_completion=false).
+    Costs nothing. Returns {project_id, status (queued|rendering|complete|error|canceled), video_url or image_urls, credits_charged}.
+    Poll every ~5 seconds until status is complete.
+parameters:
+  - name: project_id
+    type: string
+    required: true
+    label: {en_US: Project ID, zh_Hans: 任务 ID, pt_BR: ID do projeto, ja_JP: プロジェクト ID}
+    human_description: {en_US: "The project_id returned by a Magic Hour generation tool."}
+    llm_description: "project_id returned by text_to_video, image_to_video or generate_image."
+    form: llm
+  - name: kind
+    type: select
+    required: false
+    default: video
+    label: {en_US: Project type, zh_Hans: 任务类型, pt_BR: Tipo, ja_JP: 種類}
+    human_description: {en_US: "video (text_to_video / image_to_video) or image (generate_image)."}
+    llm_description: "video for text_to_video/image_to_video projects, image for generate_image projects."
+    form: llm
+    options:
+      - value: video
+        label: {en_US: video}
+      - value: image
+        label: {en_US: image}
+extra:
+  python:
+    source: tools/get_project.py

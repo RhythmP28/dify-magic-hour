@@ -1,0 +1,112 @@
+identity:
+  name: image_to_video
+  author: rhythmp28
+  label:
+    en_US: Image to Video
+    zh_Hans: 图生视频
+    pt_BR: Imagem para Vídeo
+    ja_JP: 画像から動画
+description:
+  human:
+    en_US: Animate a still image into a video with Magic Hour, guided by a text prompt. Accepts an uploaded image or a public image URL. Returns the video URL.
+    zh_Hans: 使用 Magic Hour 将静态图片动画化为视频，支持上传图片或公开图片 URL，返回视频 URL。
+    pt_BR: Anime uma imagem em vídeo com Magic Hour, guiado por um prompt. Aceita upload ou URL pública. Retorna a URL do vídeo.
+    ja_JP: Magic Hour で静止画をプロンプトに従って動画化します。アップロード画像または公開 URL に対応。動画 URL を返します。
+  llm: >-
+    Turn a still image into a short AI video (image-to-video) with Magic Hour. Provide either image_url (public https URL)
+    or image_file (an uploaded image) plus a prompt describing the motion. Returns JSON {project_id, status, video_url, credits_charged}.
+    Same models and pricing as text_to_video: free tier wan-2.2 (default, 24 credits/s, 3-10s or 15s), ltx-2.3, minimax-h3;
+    premium kling-3.0 (48/s), veo3.1 (96/s), sora-2 (120/s, max 720p). Default wan-2.2 5s 480p = 120 credits. Rendering takes 1-5 minutes.
+parameters:
+  - name: prompt
+    type: string
+    required: true
+    label: {en_US: Prompt, zh_Hans: 提示词, pt_BR: Prompt, ja_JP: プロンプト}
+    human_description: {en_US: "Describe how the image should move: subject motion, camera movement, mood."}
+    llm_description: "Describe the motion to add to the image: what moves, camera movement, mood. English works best."
+    form: llm
+  - name: image_url
+    type: string
+    required: false
+    label: {en_US: Image URL, zh_Hans: 图片 URL, pt_BR: URL da imagem, ja_JP: 画像 URL}
+    human_description: {en_US: "Public https URL of the source image (png/jpg/webp). Use this or Image file."}
+    llm_description: "Public https URL of the source image. Provide this or image_file."
+    form: llm
+  - name: image_file
+    type: file
+    required: false
+    label: {en_US: Image file, zh_Hans: 图片文件, pt_BR: Arquivo de imagem, ja_JP: 画像ファイル}
+    human_description: {en_US: "Source image uploaded in Dify. It is uploaded to Magic Hour storage before rendering."}
+    llm_description: "Source image file (png/jpg/webp). Provide this or image_url."
+    form: llm
+  - name: model
+    type: select
+    required: false
+    default: wan-2.2
+    label: {en_US: Model, zh_Hans: 模型, pt_BR: Modelo, ja_JP: モデル}
+    human_description: {en_US: "Video model. wan-2.2, ltx-2.3 and minimax-h3 are in the free tier."}
+    llm_description: "Video model id. Free tier: wan-2.2 (default), ltx-2.3, minimax-h3. Premium: kling-3.0, veo3.1, sora-2, seedance-*."
+    form: llm
+    options:
+      - value: wan-2.2
+        label: {en_US: "WAN 2.2 (free tier, 24 cr/s, 3-10s or 15s)"}
+      - value: ltx-2.3
+        label: {en_US: "LTX 2.3 (free tier, 24 cr/s, 1-10/15/20/25/30s)"}
+      - value: minimax-h3
+        label: {en_US: "MiniMax H3 (free tier, 24 cr/s, up to 1080p)"}
+      - value: seedance-1.5
+        label: {en_US: "Seedance 1.5 (30 cr/s, 4-12s)"}
+      - value: kling-2.6
+        label: {en_US: "Kling 2.6 (36 cr/s, 5 or 10s)"}
+      - value: kling-3.0
+        label: {en_US: "Kling 3.0 (48 cr/s, 3-15s)"}
+      - value: veo3.1-lite
+        label: {en_US: "Veo 3.1 Lite (48 cr/s, 4/6/8/16...56s)"}
+      - value: veo3.1
+        label: {en_US: "Veo 3.1 (96 cr/s)"}
+      - value: veo3.1-audio
+        label: {en_US: "Veo 3.1 with audio (96 cr/s)"}
+      - value: sora-2
+        label: {en_US: "Sora 2 (120 cr/s, 4/8/12/24/36/48/60s, max 720p)"}
+      - value: seedance-2.0-mini
+        label: {en_US: "Seedance 2.0 mini (4-15s, 720p)"}
+      - value: seedance-2.0
+        label: {en_US: "Seedance 2.0 (4-15s, 720p)"}
+      - value: seedance-2.5
+        label: {en_US: "Seedance 2.5 (4-30s, 720p)"}
+  - name: duration_seconds
+    type: number
+    required: false
+    default: 5
+    min: 1
+    max: 60
+    label: {en_US: Duration (seconds), zh_Hans: 时长（秒）, pt_BR: Duração (s), ja_JP: 長さ（秒）}
+    human_description: {en_US: "Length of the video in seconds. Must be an allowed value for the chosen model."}
+    llm_description: "Video length in seconds (default 5). Must be allowed by the model: wan-2.2 3-10 or 15; kling-3.0 3-15; veo3.1 4/6/8/16..56; sora-2 4/8/12/24/36/48/60."
+    form: llm
+  - name: resolution
+    type: select
+    required: false
+    default: 480p
+    label: {en_US: Resolution, zh_Hans: 分辨率, pt_BR: Resolução, ja_JP: 解像度}
+    human_description: {en_US: "Output resolution. 480p is cheapest."}
+    llm_description: "Output resolution: 480p (default, cheapest), 720p, or 1080p."
+    form: llm
+    options:
+      - value: 480p
+        label: {en_US: "480p (cheapest, fastest)"}
+      - value: 720p
+        label: {en_US: "720p"}
+      - value: 1080p
+        label: {en_US: "1080p (not supported by sora-2 / seedance-2.x)"}
+  - name: wait_for_completion
+    type: boolean
+    required: false
+    default: true
+    label: {en_US: Wait for completion, zh_Hans: 等待完成, pt_BR: Aguardar conclusão, ja_JP: 完了を待つ}
+    human_description: {en_US: "Poll every 5s until the job finishes (up to 15 min). Turn off to return the project_id immediately and check later with the Get project tool."}
+    llm_description: "true (default) waits for the render and returns the output URL. Set false to return only project_id/status immediately and poll later with magic_hour_get_project."
+    form: form
+extra:
+  python:
+    source: tools/image_to_video.py
