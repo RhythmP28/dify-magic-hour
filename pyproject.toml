@@ -7,7 +7,7 @@ license = "MIT"
 dependencies = [
     "dify-plugin>=0.9.0,<0.10.0",
     "magic_hour>=0.75.0,<1.0.0",
-    "httpx>=0.27.0",
+    "httpx>=0.27.0,<1.0.0",
 ]
 
 [dependency-groups]
