@@ -71,6 +71,10 @@ def validate_api_key(api_key: str) -> None:
         )
     if resp.status_code >= 500:
         raise ToolProviderCredentialValidationError(f"Magic Hour API error {resp.status_code}; try again later.")
+    if resp.status_code not in (200, 404):
+        raise ToolProviderCredentialValidationError(
+            f"Magic Hour credential check returned HTTP {resp.status_code}; authentication is unverified. Try again later."
+        )
     # 404 (unknown id) or 200 both prove the key is accepted.
 
 
@@ -234,14 +238,30 @@ def _finish(client: Client, created: Any, kind: str, wait: bool) -> dict[str, An
         if not result.get("status"):
             result["status"] = "queued"
         return result
-    if kind == "image":
-        fetch = lambda: client.v1.image_projects.get(id=project_id)  # noqa: E731
-    else:
-        fetch = lambda: client.v1.video_projects.get(id=project_id)  # noqa: E731
-    project = wait_for_project(fetch)
+    resource = client.v1.image_projects if kind == "image" else client.v1.video_projects
+    last_project = created
+
+    def fetch() -> Any:
+        nonlocal last_project
+        last_project = resource.get(id=project_id)
+        return last_project
+
+    polling_error = None
+    try:
+        project = wait_for_project(fetch)
+    except (ApiError, httpx.HTTPError) as e:
+        # The paid creation succeeded. Preserve it even when status retrieval fails.
+        project = last_project
+        status_code = getattr(e, "status_code", None)
+        polling_error = f"Status retrieval failed (HTTP {status_code})." if status_code else "Status retrieval failed."
     result = project_to_dict(project, kind)
+    result["project_id"] = project_id
+    if not result.get("status"):
+        result["status"] = "queued"
     if result.get("credits_charged") is None:
         result["credits_charged"] = getattr(created, "credits_charged", None)
+    if polling_error:
+        result["polling_error"] = polling_error
     return result
 
 

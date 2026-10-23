@@ -6,8 +6,8 @@ Generate AI videos and images inside Dify workflows, chatflows and agents using 
 
 ## Setup
 
-1. Get a free API key at https://magichour.ai/developer (400 credits on signup + 100/day, no card required).
-2. Install this plugin in Dify (Marketplace, or upload the `.difypkg` from the [releases](https://github.com/RhythmP28/dify-magic-hour/releases) / `dify-plugin plugin package .`).
+1. Get an API key at https://magichour.ai/developer and check your account's current credits and model access.
+2. Package this source with `dify-plugin plugin package .` and upload the resulting `.difypkg` for local testing. Public marketplace installation is not yet verified; the [existing submission](https://github.com/langgenius/dify-plugins/pull/2933) needs a rebuilt package and renewed review.
 3. In **Plugins → Magic Hour → Authorize**, paste the key as **Magic Hour API key**. The plugin validates it with a free authenticated request.
 
 Connection requirements: outbound HTTPS to `api.magichour.ai` (and to the Magic Hour upload bucket when using `image_file`).
@@ -22,6 +22,8 @@ Connection requirements: outbound HTTPS to `api.magichour.ai` (and to the Magic 
 | `get_project` | Status / URLs of an earlier project (free) | same shapes |
 
 Each generation tool has a `wait_for_completion` switch (default on: polls every 5 s, up to 15 min). Turn it off for fire-and-forget and use `get_project` later. Failed jobs are auto-refunded by Magic Hour.
+
+If status retrieval fails after creation, the tool returns the accepted `project_id`, last known `status`, known `credits_charged`, and a `polling_error`. Use `get_project` with that same ID and project kind to retrieve the result. A polling error does not establish that the generation failed or was refunded; repeating generation can create a second paid job. A wait timeout also returns the existing pending project for later retrieval.
 
 ## Quickstart (agent prompt)
 

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+import httpx
 import yaml
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -163,3 +164,64 @@ def test_tool_invoke_emits_json_and_link(monkeypatch):
 def test_estimate_credits():
     assert mh.estimate_video_credits("wan-2.2", 5) == 120
     assert mh.estimate_video_credits("seedance-2.5", 5) is None
+
+
+@pytest.mark.parametrize("kind", ["image", "video"])
+@pytest.mark.parametrize("failure", ["timeout", "server"])
+def test_polling_failure_preserves_paid_job_for_get_only_recovery(kind, failure):
+    client = MagicMock()
+    resource = client.v1.image_projects if kind == "image" else client.v1.video_projects
+    generate = client.v1.ai_image_generator.generate if kind == "image" else client.v1.text_to_video.generate
+    generate.return_value = SimpleNamespace(id="accepted_123", credits_charged=5)
+    resource.get.side_effect = (
+        httpx.ReadTimeout("private transport detail") if failure == "timeout"
+        else mh.ApiError(response=httpx.Response(503, json={"message": "private transport detail"}))
+    )
+    out = mh.generate_image(client, prompt="poster") if kind == "image" else mh.text_to_video(client, prompt="poster")
+    assert out["project_id"] == "accepted_123" and out["status"] == "queued"
+    assert out["credits_charged"] == 5 and out["polling_error"]
+    assert "private transport detail" not in out["polling_error"]
+    if failure == "server":
+        assert "503" in out["polling_error"]
+    generate.assert_called_once()
+    resource.get.side_effect = None
+    resource.get.return_value = SimpleNamespace(id="accepted_123", status="complete", credits_charged=5, downloads=[])
+    recovered = mh.get_project(client, out["project_id"], kind)
+    assert recovered["status"] == "complete"
+    resource.get.assert_called_with(id="accepted_123")
+    generate.assert_called_once()
+
+
+def test_later_polling_failure_retains_last_status_and_zero_charge(monkeypatch):
+    client = MagicMock()
+    created = SimpleNamespace(id="accepted_123", credits_charged=5)
+    client.v1.image_projects.get.side_effect = [
+        SimpleNamespace(id="accepted_123", status="rendering", credits_charged=0, downloads=[]),
+        httpx.ReadTimeout("timeout"),
+    ]
+    real_wait = mh.wait_for_project
+    monkeypatch.setattr(mh, "wait_for_project", lambda fetch: real_wait(fetch, sleep=lambda _: None))
+    out = mh._finish(client, created, "image", True)
+    assert out["project_id"] == "accepted_123" and out["status"] == "rendering"
+    assert out["credits_charged"] == 0 and out["polling_error"]
+
+
+@pytest.mark.parametrize("status", [400, 402, 429, 500])
+def test_credential_validation_does_not_accept_an_inconclusive_response(monkeypatch, status):
+    from dify_plugin.errors.tool import ToolProviderCredentialValidationError
+    monkeypatch.setattr(mh.httpx, "get", lambda *a, **k: SimpleNamespace(status_code=status))
+    with pytest.raises(ToolProviderCredentialValidationError, match=str(status)):
+        mh.validate_api_key("key")
+
+
+@pytest.mark.parametrize("module", ["text_to_video", "image_to_video", "generate_image", "get_project"])
+def test_dify_native_class_loader_finds_exactly_one_tool(module):
+    from dify_plugin import Tool
+    from dify_plugin.core.utils.class_loader import load_single_subclass_from_source
+
+    tool_cls = load_single_subclass_from_source(
+        module_name=f"tools.{module}",
+        script_path=os.path.join(ROOT, "tools", f"{module}.py"),
+        parent_type=Tool,
+    )
+    assert tool_cls.__module__ == f"tools.{module}"
