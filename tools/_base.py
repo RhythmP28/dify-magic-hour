@@ -27,7 +27,12 @@ class MagicHourBaseTool(Tool):
         for key in ("video_url", "image_url", "project_id", "status"):
             if result.get(key) is not None:
                 yield self.create_variable_message(key, result[key])
-        if result.get("status") == "error":
+        if result.get("polling_error"):
+            yield self.create_text_message(
+                f"{result['polling_error']} Project {result.get('project_id')} was already accepted. "
+                "Use Get Project Status with this ID. Do not repeat generation to retrieve the output."
+            )
+        elif result.get("status") == "error":
             yield self.create_text_message(f"Magic Hour job failed: {result.get('error')}. Credits are auto-refunded.")
         elif not urls:
             yield self.create_text_message(

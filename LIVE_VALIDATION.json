@@ -1,0 +1,26 @@
+{
+  "operator_test_only": true,
+  "native_editor_tested": false,
+  "dify_plugin": "0.9.1",
+  "magic_hour_sdk": "0.89.0",
+  "python": "3.12",
+  "focused_tests": 24,
+  "recovery": {
+    "projectId": "cmvl4vuh201f7ff01zcksmmca",
+    "status": "complete",
+    "finalCreditsCharged": 5,
+    "bytes": 917013,
+    "sha256": "acf54d3aa6552566c5b66ee2c0749edf56aa178a190f848871e5325d93366569",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "injectedPollFailure": true,
+    "acceptedIdPreserved": true,
+    "acceptedChargePreserved": true,
+    "getOnlyRecovery": true,
+    "newCreates": 1,
+    "nativeToolMessages": true,
+    "scope": "Actual Dify tool classes and official SDK with injected polling failure; session=None, native editor untested"
+  }
+}
