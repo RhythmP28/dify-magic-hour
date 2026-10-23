@@ -167,16 +167,22 @@ def test_estimate_credits():
 
 
 @pytest.mark.parametrize("kind", ["image", "video"])
-def test_polling_failure_preserves_paid_job_for_get_only_recovery(kind):
+@pytest.mark.parametrize("failure", ["timeout", "server"])
+def test_polling_failure_preserves_paid_job_for_get_only_recovery(kind, failure):
     client = MagicMock()
     resource = client.v1.image_projects if kind == "image" else client.v1.video_projects
     generate = client.v1.ai_image_generator.generate if kind == "image" else client.v1.text_to_video.generate
     generate.return_value = SimpleNamespace(id="accepted_123", credits_charged=5)
-    resource.get.side_effect = httpx.ReadTimeout("private transport detail")
+    resource.get.side_effect = (
+        httpx.ReadTimeout("private transport detail") if failure == "timeout"
+        else mh.ApiError(response=httpx.Response(503, json={"message": "private transport detail"}))
+    )
     out = mh.generate_image(client, prompt="poster") if kind == "image" else mh.text_to_video(client, prompt="poster")
     assert out["project_id"] == "accepted_123" and out["status"] == "queued"
     assert out["credits_charged"] == 5 and out["polling_error"]
     assert "private transport detail" not in out["polling_error"]
+    if failure == "server":
+        assert "503" in out["polling_error"]
     generate.assert_called_once()
     resource.get.side_effect = None
     resource.get.return_value = SimpleNamespace(id="accepted_123", status="complete", credits_charged=5, downloads=[])

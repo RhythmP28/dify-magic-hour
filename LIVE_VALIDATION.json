@@ -4,7 +4,7 @@
   "dify_plugin": "0.9.1",
   "magic_hour_sdk": "0.89.0",
   "python": "3.12",
-  "focused_tests": 24,
+  "focused_tests": 26,
   "recovery": {
     "projectId": "cmvl4vuh201f7ff01zcksmmca",
     "status": "complete",
