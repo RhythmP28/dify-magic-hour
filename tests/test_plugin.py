@@ -163,3 +163,16 @@ def test_tool_invoke_emits_json_and_link(monkeypatch):
 def test_estimate_credits():
     assert mh.estimate_video_credits("wan-2.2", 5) == 120
     assert mh.estimate_video_credits("seedance-2.5", 5) is None
+
+
+@pytest.mark.parametrize("module", ["text_to_video", "image_to_video", "generate_image", "get_project"])
+def test_dify_native_class_loader_finds_exactly_one_tool(module):
+    from dify_plugin import Tool
+    from dify_plugin.core.utils.class_loader import load_single_subclass_from_source
+
+    tool_cls = load_single_subclass_from_source(
+        module_name=f"tools.{module}",
+        script_path=os.path.join(ROOT, "tools", f"{module}.py"),
+        parent_type=Tool,
+    )
+    assert tool_cls.__module__ == f"tools.{module}"

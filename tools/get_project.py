@@ -3,11 +3,11 @@ from typing import Any
 
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from tools._base import MagicHourBaseTool
+from tools import _base
 from utils.magic_hour_client import get_project
 
 
-class GetProjectTool(MagicHourBaseTool):
+class GetProjectTool(_base.MagicHourBaseTool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage, None, None]:
         project_id = (tool_parameters.get("project_id") or "").strip()
         if not project_id:

@@ -3,11 +3,11 @@ from typing import Any
 
 from dify_plugin.entities.tool import ToolInvokeMessage
 
-from tools._base import MagicHourBaseTool
+from tools import _base
 from utils.magic_hour_client import text_to_video
 
 
-class TextToVideoTool(MagicHourBaseTool):
+class TextToVideoTool(_base.MagicHourBaseTool):
     def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage, None, None]:
         prompt = (tool_parameters.get("prompt") or "").strip()
         if not prompt:
